@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asuna Companion 💜</title>
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    color: white;
+    background: radial-gradient(circle at 75% 15%, #f4c8ff 0%, transparent 12%),
+                linear-gradient(160deg, #160d27, #39204f, #100c20);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+}
+
+.app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 90vh;
+    border: 1px solid #bd8bd966;
+    border-radius: 25px;
+    background: #170e2bd9;
+    box-shadow: 0 0 35px #c05bff33;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+header {
+    text-align: center;
+    padding: 22px 10px;
+    background: linear-gradient(135deg, #542c70, #a34d91);
+}
+
+header h1 { margin: 0; font-size: 27px; }
+header p { margin: 8px 0 0; color: #f5dfff; }
+
+.scene {
+    text-align: center;
+    padding: 28px 10px;
+    background: radial-gradient(circle at 50% 35%, #f9dfff55, transparent 30%),
+                linear-gradient(#28183e, #48305b, #1b142b);
+}
+
+.moon {
+    font-size: 65px;
+    filter: drop-shadow(0 0 20px #f6c9ff);
+}
+
+.castle { font-size: 65px; margin-top: 5px; }
+.scene p { color: #e7c9fa; font-size: 14px; }
+
+.chat {
+    flex: 1;
+    padding: 18px;
+    overflow-y: auto;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    padding: 13px 16px;
+    margin-bottom: 12px;
+    border-radius: 18px;
+    max-width: 90%;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.asuna {
+    background: #58396f;
+    border: 1px solid #b77bd1;
+    align-self: flex-start;
+}
+
+.user {
+    background: #914e91;
+    margin-left: auto;
+    align-self: flex-end;
+}
+
+.input-area {
+    display: flex;
+    gap: 8px;
+    padding: 14px;
+    background: #100a1c;
+}
+
+input {
+    flex: 1;
+    min-width: 0;
+    padding: 13px;
+    border: 1px solid #9866b5;
+    border-radius: 20px;
+    background: #291b3c;
+    color: white;
+    outline: none;
+}
+
+button {
+    border: none;
+    border-radius: 20px;
+    padding: 0 18px;
+    background: linear-gradient(135deg, #bd65d7, #e57bb6);
+    color: white;
+    font-weight: bold;
+}
+
+button:disabled { opacity: 0.5; }
+</style>
+</head>
+
+<body>
+<div class="app">
+    <header>
+        <h1>💜 Асуна</h1>
+        <p>Твоя волшебная спутница</p>
+    </header>
+
+    <div class="scene">
+        <div class="moon">🌕</div>
+        <div class="castle">🏰</div>
+        <p>Под луной, среди звёзд и сакуры 🌸</p>
+    </div>
+
+    <div class="chat" id="chat">
+        <div class="message asuna">
+            Привет! Я Асуна! 💜
+            Я так рада нашей встрече!
+        </div>
+    </div>
+
+    <div class="input-area">
+        <input id="message" type="text"
+               placeholder="Напиши что-нибудь...">
+        <button id="sendButton" onclick="sendMessage()">➤</button>
+    </div>
+</div>
+
+<script>
+const chat = document.getElementById("chat");
+const input = document.getElementById("message");
+const sendButton = document.getElementById("sendButton");
+const history = JSON.parse(
+    localStorage.getItem("asunaChatHistory") || "[]"
+);
+
+let userName = localStorage.getItem("asunaUserName") || "";
+
+function addMessage(text, className) {
+    const message = document.createElement("div");
+    message.className = "message " + className;
+    message.textContent = text;
+    chat.appendChild(message);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+async function sendMessage() {
+    const value = input.value.trim();
+    if (!value || sendButton.disabled) return;
+
+    addMessage(value, "user");
+    input.value = "";
+    sendButton.disabled = true;
+
+    const waiting = document.createElement("div");
+    waiting.className = "message asuna";
+    waiting.textContent = "Асуна печатает... 💜";
+    chat.appendChild(waiting);
+    chat.scrollTop = chat.scrollHeight;
+
+    try {
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: value,
+                userName: userName,
+                history: history
+            })
+        });
+
+        const data = await response.json();
+        waiting.remove();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Ошибка сервера");
+        }
+
+        if (!data.reply) {
+            throw new Error("Асуна не прислала ответ");
+        }
+
+        addMessage(data.reply, "asuna");
+        history.push(
+    { role: "user", parts: [{ text: value }] },
+    { role: "model", parts: [{ text: data.reply }] }
+); 
+
+localStorage.setItem("asunaChatHistory", JSON.stringify(history));
+
+} catch (error) {
+        waiting.remove();
+        addMessage("Прости, не удалось связаться с сервером. 💜 " + error.message, "asuna");
+    } finally {
+        sendButton.disabled = false;
+        input.focus();
+    }
+}
+
+input.addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        sendMessage();
+    }
+});
+</script>
+</body>
+</html>
