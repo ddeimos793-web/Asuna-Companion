@@ -4,65 +4,326 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#100b1c">
 <title>Asuna Companion 💜</title>
+
 <style>
 * { box-sizing: border-box; }
+
+:root {
+    --pink: #ff83bd;
+    --violet: #b69aff;
+    --panel: #1b1428;
+}
 
 body {
     margin: 0;
     min-height: 100vh;
     font-family: Arial, sans-serif;
-    color: white;
-    background: radial-gradient(circle at 75% 15%, #f4c8ff 0%, transparent 12%),
-                linear-gradient(160deg, #160d27, #39204f, #100c20);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 15px;
+    color: #fff4ff;
+    background:
+        radial-gradient(circle at 50% 15%, #422653 0%, transparent 42%),
+        linear-gradient(160deg, #160d27, #100b1c 75%);
 }
+
+button { font: inherit; cursor: pointer; }
+.hidden { display: none !important; }
+
+/* ЗАСТАВКА */
+
+#splash {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #100b20, #332044 65%, #171020);
+    transition: opacity .8s ease;
+}
+
+#splash.hide {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.splash-title {
+    z-index: 3;
+    text-align: center;
+    padding: 20px;
+    animation: welcome 1.5s ease both;
+}
+
+.splash-title h1 {
+    font-size: 32px;
+    color: #ffe5fa;
+    text-shadow: 0 0 25px #e69bff;
+}
+
+.splash-title p { color: #e8c9f6; }
+
+.splash-moon {
+    position: absolute;
+    top: 15%;
+    left: calc(50% - 38px);
+    font-size: 70px;
+    filter: drop-shadow(0 0 25px #f5caff);
+    animation: moonDown 3.5s ease-in forwards;
+}
+
+.splash-horizon {
+    position: absolute;
+    bottom: -45px;
+    width: 140%;
+    height: 180px;
+    background: linear-gradient(160deg, #382447, #171020);
+    border-radius: 50% 50% 0 0;
+    box-shadow: 0 -10px 45px #c77bdf33;
+}
+
+.splash-sakura {
+    position: absolute;
+    bottom: 0;
+    font-size: 95px;
+    filter: drop-shadow(0 0 20px #ff83bd88);
+    animation: sakuraAppear 2.5s ease both;
+}
+
+.splash-skip {
+    position: absolute;
+    bottom: 28px;
+    z-index: 5;
+    border: 1px solid #e9b5ff66;
+    background: #24172eaa;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+}
+
+.petal {
+    position: absolute;
+    top: -30px;
+    color: #ffc0e0;
+    font-size: 20px;
+    animation: falling linear infinite;
+    pointer-events: none;
+}
+
+@keyframes moonDown {
+    0% { transform: translateY(0); opacity: 1; }
+    75% { opacity: 1; }
+    100% { transform: translateY(280px); opacity: .15; }
+}
+
+@keyframes welcome {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sakuraAppear {
+    from { opacity: 0; transform: translateY(35px) scale(.8); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes falling {
+    to { transform: translate(100px, 110vh) rotate(500deg); opacity: .1; }
+}
+
+/* ГЛАВНЫЙ ЭКРАН */
 
 .app {
     width: 100%;
-    max-width: 480px;
-    min-height: 90vh;
-    border: 1px solid #bd8bd966;
-    border-radius: 25px;
-    background: #170e2bd9;
-    box-shadow: 0 0 35px #c05bff33;
+    max-width: 520px;
+    min-height: 100vh;
+    margin: auto;
+    padding: 18px;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 4px;
+}
+
+.brand {
+    font-size: 23px;
+    font-weight: bold;
+    color: #ffe2fa;
+}
+
+.menu-button {
+    width: 44px;
+    height: 44px;
+    border-radius: 15px;
+    color: white;
+    border: 1px solid #d29be655;
+    background: #ffffff0c;
+    font-size: 25px;
+}
+
+.greeting {
+    text-align: center;
+    margin: 25px 0 12px;
+}
+
+.greeting h2 { font-size: 25px; margin-bottom: 8px; }
+.greeting p { color: #c8b5d8; font-size: 14px; }
+
+.hero {
+    min-height: 280px;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
     overflow: hidden;
+    border-radius: 28px;
+    margin: 20px 0;
+    background:
+        radial-gradient(circle, #b66acb33, transparent 55%),
+        linear-gradient(145deg, #281a3c, #171020);
+    border: 1px solid #d19be633;
 }
 
-header {
+.hero::before {
+    content: "";
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: #d68aff12;
+    filter: blur(30px);
+}
+
+.flower {
+    position: relative;
+    font-size: 105px;
+    line-height: 1.3;
+    filter: drop-shadow(0 0 20px #ff83bd88);
+    animation: breathe 3.5s ease-in-out infinite;
+}
+
+@keyframes breathe {
+    0%, 100% { transform: scale(.94); }
+    50% { transform: scale(1.06); }
+}
+
+.hero-label { color: #f5d9ff; margin-top: 10px; font-size: 14px; }
+.hero-hint { color: #bca5cc; font-size: 12px; margin-top: 7px; }
+
+.section-title { font-size: 17px; margin: 25px 3px 13px; }
+
+.cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.feature {
+    min-height: 125px;
+    border: 1px solid #d5a1eb33;
+    border-radius: 22px;
+    background: linear-gradient(145deg, #30203f, #1c1428);
+    color: white;
+    text-align: left;
+    padding: 17px;
+}
+
+.feature:active { transform: scale(.97); }
+.feature .emoji { font-size: 30px; display: block; margin-bottom: 12px; }
+.feature strong { display: block; font-size: 15px; }
+.feature small { display: block; margin-top: 6px; color: #cbb7d9; font-size: 11px; }
+
+.footer {
     text-align: center;
-    padding: 22px 10px;
-    background: linear-gradient(135deg, #542c70, #a34d91);
+    color: #bda6cc;
+    font-size: 12px;
+    padding: 25px 5px;
 }
 
-header h1 { margin: 0; font-size: 27px; }
-header p { margin: 8px 0 0; color: #f5dfff; }
+/* БОКОВОЕ МЕНЮ */
 
-.scene {
-    text-align: center;
-    padding: 28px 10px;
-    background: radial-gradient(circle at 50% 35%, #f9dfff55, transparent 30%),
-                linear-gradient(#28183e, #48305b, #1b142b);
+#sideMenu {
+    position: fixed;
+    z-index: 100;
+    inset: 0;
+    background: #0009;
+    opacity: 0;
+    pointer-events: none;
+    transition: .25s;
 }
 
-.moon {
-    font-size: 65px;
-    filter: drop-shadow(0 0 20px #f6c9ff);
+#sideMenu.open {
+    opacity: 1;
+    pointer-events: auto;
 }
 
-.castle { font-size: 65px; margin-top: 5px; }
-.scene p { color: #e7c9fa; font-size: 14px; }
+.drawer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: min(310px, 85vw);
+    padding: 25px 18px;
+    background: #1b1428;
+    border-left: 1px solid #b987d955;
+    transform: translateX(100%);
+    transition: .25s;
+    overflow-y: auto;
+}
+
+#sideMenu.open .drawer { transform: translateX(0); }
+.drawer h2 { color: #ffdafa; }
+
+.drawer button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin: 10px 0;
+    padding: 14px;
+    border-radius: 14px;
+    color: white;
+    background: #30213e;
+    border: 1px solid #b987d933;
+}
+
+/* ЧАТ */
+
+#chatScreen {
+    min-height: 100vh;
+    max-width: 520px;
+    margin: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-bottom: 1px solid #b987d933;
+}
+
+.back-button {
+    border: 0;
+    border-radius: 13px;
+    background: #392747;
+    color: white;
+    padding: 10px 14px;
+}
+
+.chat-title { font-weight: bold; font-size: 18px; }
+.chat-subtitle { color: #c9b2d8; font-size: 11px; margin-top: 4px; }
 
 .chat {
     flex: 1;
-    padding: 18px;
+    padding: 15px 5px;
     overflow-y: auto;
-    min-height: 180px;
+    min-height: 250px;
     display: flex;
     flex-direction: column;
 }
@@ -92,45 +353,128 @@ header p { margin: 8px 0 0; color: #f5dfff; }
 .input-area {
     display: flex;
     gap: 8px;
-    padding: 14px;
+    padding: 12px;
     background: #100a1c;
+    border: 1px solid #9b6ab533;
+    border-radius: 24px;
 }
 
-input {
+#message {
     flex: 1;
     min-width: 0;
     padding: 13px;
-    border: 1px solid #9866b5;
-    border-radius: 20px;
+    border: 0;
+    border-radius: 18px;
     background: #291b3c;
     color: white;
     outline: none;
 }
 
-button {
+#sendButton {
+    width: 45px;
     border: none;
-    border-radius: 20px;
-    padding: 0 18px;
+    border-radius: 16px;
     background: linear-gradient(135deg, #bd65d7, #e57bb6);
     color: white;
     font-weight: bold;
 }
 
-button:disabled { opacity: 0.5; }
+#sendButton:disabled { opacity: .5; }
+
+.toast {
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    padding: 12px 18px;
+    border-radius: 20px;
+    background: #382448;
+    border: 1px solid #c68de0;
+    color: white;
+    text-align: center;
+    width: max-content;
+    max-width: 90%;
+}
 </style>
 </head>
 
 <body>
-<div class="app">
-    <header>
-        <h1>💜 Асуна</h1>
-        <p>Твоя волшебная спутница</p>
-    </header>
 
-    <div class="scene">
-        <div class="moon">🌕</div>
-        <div class="castle">🏰</div>
-        <p>Под луной, среди звёзд и сакуры 🌸</p>
+<!-- ЗАСТАВКА -->
+<div id="splash">
+    <div class="splash-moon">🌕</div>
+
+    <div class="splash-title">
+        <h1>Asuna Companion</h1>
+        <p>Добро пожаловать в мой маленький мир 💜</p>
+        <p>Асуна просыпается...</p>
+    </div>
+
+    <div class="splash-sakura">🌸</div>
+    <div class="splash-horizon"></div>
+
+    <button class="splash-skip" onclick="closeSplash()">Пропустить</button>
+</div>
+
+<!-- ГЛАВНЫЙ ЭКРАН -->
+<div class="app" id="homeScreen">
+
+    <div class="topbar">
+        <div class="brand">💜 Асуна</div>
+        <button class="menu-button" onclick="openMenu()">⋮</button>
+    </div>
+
+    <div class="greeting">
+        <h2>Рада тебя видеть 🌸</h2>
+        <p>Здесь всегда найдётся место для тёплого разговора</p>
+    </div>
+
+    <div class="hero">
+        <div class="flower">🌸</div>
+        <div class="hero-label">Асуна рядом</div>
+        <div class="hero-hint">Тихий уголок среди звёзд</div>
+    </div>
+
+    <div class="section-title">Что будем делать?</div>
+
+    <div class="cards">
+        <button class="feature" onclick="openChat()">
+            <span class="emoji">💬</span>
+            <strong>Общение</strong>
+            <small>Поговорим обо всём</small>
+        </button>
+
+        <button class="feature" onclick="showComingSoon('Учёба')">
+            <span class="emoji">📚</span>
+            <strong>Учёба</strong>
+            <small>Учимся вместе</small>
+        </button>
+
+        <button class="feature" onclick="showComingSoon('Музыка')">
+            <span class="emoji">🎵</span>
+            <strong>Музыка</strong>
+            <small>Наше музыкальное пространство</small>
+        </button>
+
+        <button class="feature" onclick="showComingSoon('Guardian')">
+            <span class="emoji">🛡️</span>
+            <strong>Guardian</strong>
+            <small>Помощь и безопасность</small>
+        </button>
+    </div>
+
+    <div class="footer">Асуна всегда рада поговорить с тобой 💜</div>
+</div>
+
+<!-- ЭКРАН ЧАТА -->
+<div id="chatScreen" class="hidden">
+    <div class="chat-header">
+        <button class="back-button" onclick="closeChat()">←</button>
+        <div>
+            <div class="chat-title">💜 Асуна</div>
+            <div class="chat-subtitle">Твой уютный чат</div>
+        </div>
     </div>
 
     <div class="chat" id="chat">
@@ -141,22 +485,120 @@ button:disabled { opacity: 0.5; }
     </div>
 
     <div class="input-area">
-        <input id="message" type="text"
-               placeholder="Напиши что-нибудь...">
+        <input id="message" type="text" placeholder="Напиши что-нибудь...">
         <button id="sendButton" onclick="sendMessage()">➤</button>
     </div>
 </div>
 
+<!-- БОКОВАЯ ПАНЕЛЬ -->
+<div id="sideMenu" onclick="closeMenuOutside(event)">
+    <div class="drawer">
+        <h2>Настройки Асуны 💜</h2>
+        <button onclick="closeMenu(); showComingSoon('Внешность Асуны')">🌸 Внешность и персонаж</button>
+        <button onclick="closeMenu(); showComingSoon('Голос')">🎙️ Голос</button>
+        <button onclick="closeMenu(); showComingSoon('Ночной режим')">🌙 Ночной режим</button>
+        <button onclick="closeMenu(); showComingSoon('Уведомления')">🔔 Уведомления</button>
+        <button onclick="closeMenu(); showComingSoon('Гардероб и подарки')">🎁 Гардероб и подарки</button>
+        <button onclick="closeMenu(); showComingSoon('Asuna Studio')">🎨 Asuna Studio</button>
+        <button onclick="closeMenu(); showComingSoon('Справка')">ℹ️ О проекте</button>
+        <button onclick="closeMenu()">Закрыть</button>
+    </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
 <script>
+// ВАЖНО: адрес AI-бэкенда Render
+const API_URL = "https://asuna-ai-m2o1.onrender.com/api/chat";
+
 const chat = document.getElementById("chat");
 const input = document.getElementById("message");
 const sendButton = document.getElementById("sendButton");
-const history = JSON.parse(
-    localStorage.getItem("asunaChatHistory") || "[]"
-);
 
-let userName = localStorage.getItem("asunaUserName") || "";
+let history = [];
 
+try {
+    history = JSON.parse(
+        localStorage.getItem("asunaChatHistory") || "[]"
+    );
+
+    if (!Array.isArray(history)) history = [];
+} catch (error) {
+    history = [];
+}
+
+const userName = localStorage.getItem("asunaUserName") || "";
+
+// ЗАСТАВКА
+let splashClosed = false;
+
+function closeSplash() {
+    if (splashClosed) return;
+    splashClosed = true;
+
+    const splash = document.getElementById("splash");
+    splash.classList.add("hide");
+
+    setTimeout(() => {
+        splash.remove();
+    }, 850);
+}
+
+function createPetals() {
+    const splash = document.getElementById("splash");
+
+    for (let i = 0; i < 12; i++) {
+        const petal = document.createElement("div");
+        petal.className = "petal";
+        petal.textContent = "🌸";
+        petal.style.left = Math.random() * 100 + "%";
+        petal.style.animationDuration = (5 + Math.random() * 6) + "s";
+        petal.style.animationDelay = (Math.random() * 4) + "s";
+        petal.style.fontSize = (12 + Math.random() * 13) + "px";
+        splash.appendChild(petal);
+    }
+}
+
+createPetals();
+
+window.addEventListener("load", () => {
+    setTimeout(closeSplash, 4200);
+});
+
+// МЕНЮ
+function openMenu() {
+    document.getElementById("sideMenu").classList.add("open");
+}
+
+function closeMenu() {
+    document.getElementById("sideMenu").classList.remove("open");
+}
+
+function closeMenuOutside(event) {
+    if (event.target.id === "sideMenu") closeMenu();
+}
+
+// ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ
+function openChat() {
+    document.getElementById("homeScreen").classList.add("hidden");
+    document.getElementById("chatScreen").classList.remove("hidden");
+    input.focus();
+}
+
+function closeChat() {
+    document.getElementById("chatScreen").classList.add("hidden");
+    document.getElementById("homeScreen").classList.remove("hidden");
+}
+
+function showComingSoon(name) {
+    const toast = document.getElementById("toast");
+    toast.textContent = name + " — этот раздел добавим на следующем этапе 💜";
+    toast.classList.remove("hidden");
+
+    setTimeout(() => toast.classList.add("hidden"), 2600);
+}
+
+// ЧАТ
 function addMessage(text, className) {
     const message = document.createElement("div");
     message.className = "message " + className;
@@ -167,6 +609,7 @@ function addMessage(text, className) {
 
 async function sendMessage() {
     const value = input.value.trim();
+
     if (!value || sendButton.disabled) return;
 
     addMessage(value, "user");
@@ -180,7 +623,7 @@ async function sendMessage() {
     chat.scrollTop = chat.scrollHeight;
 
     try {
-        const response = await fetch("/api/chat", {
+        const response = await fetch(API_URL, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -204,16 +647,28 @@ async function sendMessage() {
         }
 
         addMessage(data.reply, "asuna");
+
         history.push(
-    { role: "user", parts: [{ text: value }] },
-    { role: "model", parts: [{ text: data.reply }] }
-); 
+            { role: "user", parts: [{ text: value }] },
+            { role: "model", parts: [{ text: data.reply }] }
+        );
 
-localStorage.setItem("asunaChatHistory", JSON.stringify(history));
+        // Ограничиваем историю последними 40 сообщениями
+        if (history.length > 40) {
+            history = history.slice(-40);
+        }
 
-} catch (error) {
+        localStorage.setItem(
+            "asunaChatHistory",
+            JSON.stringify(history)
+        );
+
+    } catch (error) {
         waiting.remove();
-        addMessage("Прости, не удалось связаться с сервером. 💜 " + error.message, "asuna");
+        addMessage(
+            "Прости, не удалось связаться с сервером. 💜 " + error.message,
+            "asuna"
+        );
     } finally {
         sendButton.disabled = false;
         input.focus();
@@ -226,5 +681,6 @@ input.addEventListener("keydown", function(event) {
     }
 });
 </script>
+
 </body>
 </html>
