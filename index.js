@@ -22,13 +22,20 @@ app.post("/api/chat", async (req, res) => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
-            body: JSON.stringify({
-    message: req.body.message,
-    userName: req.body.userName || "",
-    history: req.body.history || [],
-    studyMode: req.body.studyMode === true,
-    image: req.body.image || null
-})
+            const response = await fetch(`${ASUNA_API}/api/chat`, {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+        
+    },
+    body: JSON.stringify({
+        message: req.body.message,
+        userName: req.body.userName || "",
+        history: req.body.history || [],
+        studyMode: req.body.studyMode === true,
+        image: req.body.image || null
+    })
+});
 
         const data = await response.json();
 
