@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 10000;
 
 const ASUNA_API = "https://asuna-ai-m2o1.onrender.com";
 
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "10mb" }));
 app.use(express.static(__dirname));
 
 app.get("/api/hello", (req, res) => {
@@ -22,13 +22,13 @@ app.post("/api/chat", async (req, res) => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
-            },
             body: JSON.stringify({
-                message: req.body.message,
-                userName: req.body.userName || "",
-                history: req.body.history || []
-            })
-        });
+    message: req.body.message,
+    userName: req.body.userName || "",
+    history: req.body.history || [],
+    studyMode: req.body.studyMode === true,
+    image: req.body.image || null
+})
 
         const data = await response.json();
 
