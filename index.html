@@ -827,7 +827,9 @@ body[data-motion="reduced"] .flower { transform: none; }
 
 <script>
 // ВАЖНО: адрес AI-бэкенда Render — оставлен без изменений.
-const API_URL = "https://asuna-ai-m2o1.onrender.com/api/chat";
+const API_URL = "/api/chat";
+
+const REQUEST_TIMEOUT = 190000;
 
 const chat = document.getElementById("chat");
 const input = document.getElementById("message");
@@ -836,18 +838,27 @@ const sendButton = document.getElementById("sendButton");
 let history = [];
 
 try {
-    history = JSON.parse(
+    const savedHistory = JSON.parse(
         localStorage.getItem("asunaChatHistory") || "[]"
     );
 
-    if (!Array.isArray(history)) history = [];
+    if (Array.isArray(savedHistory)) {
+        history = savedHistory.slice(-40);
+    }
 } catch (error) {
     history = [];
 }
 
-const userName = localStorage.getItem("asunaUserName") || "";
+let userName = "";
+
+try {
+    userName = localStorage.getItem("asunaUserName") || "";
+} catch (error) {
+    userName = "";
+}
 
 /* НАСТРОЙКИ ОФОРМЛЕНИЯ И ДОСТУПНОСТИ */
+
 const appearanceDefaults = {
     theme: "dark",
     textSize: "normal",
@@ -860,11 +871,18 @@ try {
     const savedAppearance = JSON.parse(
         localStorage.getItem("asunaAppearanceSettings") || "{}"
     );
+
     if (savedAppearance && typeof savedAppearance === "object") {
-        appearanceSettings.theme = ["dark", "rose", "contrast"].includes(savedAppearance.theme)
-            ? savedAppearance.theme : "dark";
-        appearanceSettings.textSize = savedAppearance.textSize === "large" ? "large" : "normal";
-        appearanceSettings.reducedMotion = savedAppearance.reducedMotion === true;
+        appearanceSettings.theme =
+            ["dark", "rose", "contrast"].includes(savedAppearance.theme)
+                ? savedAppearance.theme
+                : "dark";
+
+        appearanceSettings.textSize =
+            savedAppearance.textSize === "large" ? "large" : "normal";
+
+        appearanceSettings.reducedMotion =
+            savedAppearance.reducedMotion === true;
     }
 } catch (error) {
     appearanceSettings = { ...appearanceDefaults };
@@ -873,7 +891,8 @@ try {
 function applyAppearanceSettings() {
     document.body.dataset.theme = appearanceSettings.theme;
     document.body.dataset.textSize = appearanceSettings.textSize;
-    document.body.dataset.motion = appearanceSettings.reducedMotion ? "reduced" : "full";
+    document.body.dataset.motion =
+        appearanceSettings.reducedMotion ? "reduced" : "full";
 
     const themeButtons = {
         rose: document.getElementById("themeRose"),
@@ -882,19 +901,34 @@ function applyAppearanceSettings() {
     };
 
     Object.entries(themeButtons).forEach(([theme, button]) => {
-        if (button) button.setAttribute("aria-pressed", String(appearanceSettings.theme === theme));
+        if (button) {
+            button.setAttribute(
+                "aria-pressed",
+                String(appearanceSettings.theme === theme)
+            );
+        }
     });
 
     const textButton = document.getElementById("textSizeToggle");
+
     if (textButton) {
         const enabled = appearanceSettings.textSize === "large";
+
         textButton.setAttribute("aria-pressed", String(enabled));
-        textButton.textContent = enabled ? "🔎 Увеличить текст: вкл." : "🔎 Увеличить текст: выкл.";
+
+        textButton.textContent = enabled
+            ? "🔎 Увеличить текст: вкл."
+            : "🔎 Увеличить текст: выкл.";
     }
 
     const motionButton = document.getElementById("motionToggle");
+
     if (motionButton) {
-        motionButton.setAttribute("aria-pressed", String(appearanceSettings.reducedMotion));
+        motionButton.setAttribute(
+            "aria-pressed",
+            String(appearanceSettings.reducedMotion)
+        );
+
         motionButton.textContent = appearanceSettings.reducedMotion
             ? "✨ Отключить анимации: вкл."
             : "✨ Отключить анимации: выкл.";
@@ -905,40 +939,60 @@ function applyAppearanceSettings() {
         rose: "#2b1a35",
         contrast: "#100b1c"
     };
-    const themeMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeMeta) themeMeta.setAttribute("content", themeColors[appearanceSettings.theme]);
+
+    const themeMeta = document.querySelector(
+        'meta[name="theme-color"]'
+    );
+
+    if (themeMeta) {
+        themeMeta.setAttribute(
+            "content",
+            themeColors[appearanceSettings.theme]
+        );
+    }
 }
 
 function saveAppearanceSettings() {
     try {
-        localStorage.setItem("asunaAppearanceSettings", JSON.stringify(appearanceSettings));
+        localStorage.setItem(
+            "asunaAppearanceSettings",
+            JSON.stringify(appearanceSettings)
+        );
     } catch (error) {
-        // Приложение продолжает работать, даже если хранилище недоступно.
+        // Настройки остаются применёнными до закрытия страницы.
     }
+
     applyAppearanceSettings();
 }
 
 function setTheme(theme) {
     if (!["dark", "rose", "contrast"].includes(theme)) return;
+
     appearanceSettings.theme = theme;
     saveAppearanceSettings();
 }
 
 function toggleTextSize() {
-    appearanceSettings.textSize = appearanceSettings.textSize === "large" ? "normal" : "large";
+    appearanceSettings.textSize =
+        appearanceSettings.textSize === "large" ? "normal" : "large";
+
     saveAppearanceSettings();
 }
 
 function toggleReducedMotion() {
-    appearanceSettings.reducedMotion = !appearanceSettings.reducedMotion;
+    appearanceSettings.reducedMotion =
+        !appearanceSettings.reducedMotion;
+
     saveAppearanceSettings();
 }
 
 applyAppearanceSettings();
 
-/* ВРЕМЯ СУТОК: ИСПОЛЬЗУЕТСЯ МЕСТНОЕ ВРЕМЯ УСТРОЙСТВА */
+/* ВРЕМЯ СУТОК */
+
 function updateWorldTime() {
     const hour = new Date().getHours();
+
     let phase = "night";
     let greeting = "Тихий уголок среди звёзд";
 
@@ -959,52 +1013,62 @@ function updateWorldTime() {
     document.body.dataset.time = phase;
 
     const hint = document.getElementById("timeGreeting");
-    if (hint) hint.textContent = greeting;
+
+    if (hint) {
+        hint.textContent = greeting;
+    }
 }
 
-// Сначала выставляем правильное небо, не дожидаясь загрузки страницы.
 updateWorldTime();
 
-// Проверяем время раз в минуту, чтобы фон менялся и при открытом приложении.
 setInterval(updateWorldTime, 60 * 1000);
 
-// ЗАСТАВКА
+/* ЗАСТАВКА */
+
 let splashClosed = false;
 
 function closeSplash() {
     if (splashClosed) return;
+
     splashClosed = true;
 
     const splash = document.getElementById("splash");
+
     if (!splash) return;
 
     splash.classList.add("hide");
 
     setTimeout(() => {
-        if (splash.parentNode) splash.remove();
+        if (splash.parentNode) {
+            splash.remove();
+        }
     }, 600);
 }
 
 function createPetals() {
     const splash = document.getElementById("splash");
+
     if (!splash) return;
 
-    // Небольшое количество лепестков — только для короткой заставки.
     for (let i = 0; i < 5; i++) {
         const petal = document.createElement("div");
+
         petal.className = "petal";
         petal.textContent = "🌸";
         petal.style.left = Math.random() * 100 + "%";
-        petal.style.animationDuration = (5 + Math.random() * 4) + "s";
-        petal.style.animationDelay = (Math.random() * 1.5) + "s";
-        petal.style.fontSize = (12 + Math.random() * 10) + "px";
+        petal.style.animationDuration =
+            (5 + Math.random() * 4) + "s";
+        petal.style.animationDelay =
+            (Math.random() * 1.5) + "s";
+        petal.style.fontSize =
+            (12 + Math.random() * 10) + "px";
+
         splash.appendChild(petal);
     }
 }
 
 createPetals();
 
-// Заставка больше не удерживает пользователя несколько секунд.
 if (document.readyState === "complete") {
     setTimeout(closeSplash, 900);
 } else {
@@ -1013,7 +1077,8 @@ if (document.readyState === "complete") {
     }, { once: true });
 }
 
-// МЕНЮ
+/* МЕНЮ */
+
 function openMenu() {
     document.getElementById("sideMenu").classList.add("open");
 }
@@ -1023,13 +1088,71 @@ function closeMenu() {
 }
 
 function closeMenuOutside(event) {
-    if (event.target.id === "sideMenu") closeMenu();
+    if (event.target.id === "sideMenu") {
+        closeMenu();
+    }
 }
 
-// ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ
+/* СООБЩЕНИЯ ЧАТА */
+
+function addMessage(text, className) {
+    const message = document.createElement("div");
+
+    message.className = "message " + className;
+    message.textContent = text;
+
+    chat.appendChild(message);
+    chat.scrollTop = chat.scrollHeight;
+
+    return message;
+}
+
+/* ВОССТАНОВЛЕНИЕ ИСТОРИИ */
+
+function renderChatHistory() {
+    chat.replaceChildren();
+
+    if (history.length === 0) {
+        addMessage(
+            "Привет! Я Асуна! 💜\nЯ так рада нашей встрече!",
+            "asuna"
+        );
+
+        return;
+    }
+
+    history.forEach(item => {
+        if (!item || !Array.isArray(item.parts)) return;
+
+        const text = item.parts
+            .map(part => part && typeof part.text === "string"
+                ? part.text
+                : "")
+            .join("");
+
+        if (!text) return;
+
+        if (item.role === "user") {
+            addMessage(text, "user");
+        } else if (
+            item.role === "model" ||
+            item.role === "assistant"
+        ) {
+            addMessage(text, "asuna");
+        }
+    });
+
+    chat.scrollTop = chat.scrollHeight;
+}
+
+/* ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ */
+
 function openChat() {
     document.getElementById("homeScreen").classList.add("hidden");
     document.getElementById("chatScreen").classList.remove("hidden");
+
+    renderChatHistory();
+
     input.focus();
 }
 
@@ -1040,20 +1163,34 @@ function closeChat() {
 
 function showComingSoon(name) {
     const toast = document.getElementById("toast");
-    toast.textContent = name + " — этот раздел добавим на следующем этапе 💜";
+
+    toast.textContent =
+        name + " — этот раздел добавим на следующем этапе 💜";
+
     toast.classList.remove("hidden");
 
-    setTimeout(() => toast.classList.add("hidden"), 2600);
+    setTimeout(() => {
+        toast.classList.add("hidden");
+    }, 2600);
 }
 
-// ЧАТ
-function addMessage(text, className) {
-    const message = document.createElement("div");
-    message.className = "message " + className;
-    message.textContent = text;
-    chat.appendChild(message);
-    chat.scrollTop = chat.scrollHeight;
+/* СОХРАНЕНИЕ ИСТОРИИ */
+
+function saveChatHistory() {
+    try {
+        localStorage.setItem(
+            "asunaChatHistory",
+            JSON.stringify(history)
+        );
+
+        return true;
+    } catch (error) {
+        console.warn("Не удалось сохранить историю чата:", error);
+        return false;
+    }
 }
+
+/* ЧАТ С АСУНОЙ */
 
 async function sendMessage() {
     const value = input.value.trim();
@@ -1061,14 +1198,20 @@ async function sendMessage() {
     if (!value || sendButton.disabled) return;
 
     addMessage(value, "user");
+
     input.value = "";
     sendButton.disabled = true;
 
-    const waiting = document.createElement("div");
-    waiting.className = "message asuna";
-    waiting.textContent = "Асуна печатает... 💜";
-    chat.appendChild(waiting);
-    chat.scrollTop = chat.scrollHeight;
+    const waiting = addMessage(
+        "Асуна готовит ответ... 💜",
+        "asuna"
+    );
+
+    const controller = new AbortController();
+
+    const timeout = setTimeout(() => {
+        controller.abort();
+    }, REQUEST_TIMEOUT);
 
     try {
         const response = await fetch(API_URL, {
@@ -1080,54 +1223,93 @@ async function sendMessage() {
                 message: value,
                 userName: userName,
                 history: history
-            })
+            }),
+            signal: controller.signal
         });
 
-        const data = await response.json();
-        waiting.remove();
+        const responseText = await response.text();
+
+        let data;
+
+        try {
+            data = JSON.parse(responseText);
+        } catch (error) {
+            throw new Error(
+                "Сервер вернул непонятный ответ. Попробуй позже 💜"
+            );
+        }
 
         if (!response.ok) {
-            throw new Error(data.error || "Ошибка сервера");
+            throw new Error(
+                data.error || "Ошибка сервера: " + response.status
+            );
         }
 
-        if (!data.reply) {
-            throw new Error("Асуна не прислала ответ");
+        if (
+            !data ||
+            typeof data.reply !== "string" ||
+            !data.reply.trim()
+        ) {
+            throw new Error("Асуна не прислала текст ответа.");
         }
+
+        waiting.remove();
 
         addMessage(data.reply, "asuna");
 
         history.push(
-            { role: "user", parts: [{ text: value }] },
-            { role: "model", parts: [{ text: data.reply }] }
+            {
+                role: "user",
+                parts: [{ text: value }]
+            },
+            {
+                role: "model",
+                parts: [{ text: data.reply }]
+            }
         );
 
-        // Ограничиваем историю последними 40 сообщениями.
-        if (history.length > 40) {
-            history = history.slice(-40);
-        }
+        history = history.slice(-40);
 
-        localStorage.setItem(
-            "asunaChatHistory",
-            JSON.stringify(history)
-        );
+        // Ошибка локального сохранения не отменяет успешный ответ.
+        saveChatHistory();
 
     } catch (error) {
         waiting.remove();
+
+        let errorMessage;
+
+        if (error.name === "AbortError") {
+            errorMessage =
+                "Ожидание ответа превысило 190 секунд. " +
+                "Попробуй отправить сообщение ещё раз 💜";
+        } else {
+            errorMessage =
+                error.message ||
+                "Не удалось связаться с сервером Асуны.";
+        }
+
         addMessage(
-            "Прости, не удалось связаться с сервером. 💜 " + error.message,
+            "Прости, сейчас возникла проблема. 💜\n" + errorMessage,
             "asuna"
         );
+
     } finally {
+        clearTimeout(timeout);
+
         sendButton.disabled = false;
         input.focus();
     }
 }
 
+/* ОТПРАВКА ПО ENTER */
+
 input.addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
+        event.preventDefault();
         sendMessage();
     }
 });
+
 </script>
 
 </body>
