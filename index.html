@@ -1226,13 +1226,144 @@ function closeMenuOutside(event) {
     }
 }
 
+
+/* ГОЛОСОВОЙ ДВИЖОК АСУНЫ */
+
+let currentAudio = null;
+let currentAudioUrl = null;
+let currentVoiceButton = null;
+let currentTTSController = null;
+
+function stopVoice() {
+    if (currentTTSController) {
+        currentTTSController.abort();
+        currentTTSController = null;
+    }
+
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+    }
+
+    if (currentAudioUrl) {
+        URL.revokeObjectURL(currentAudioUrl);
+        currentAudioUrl = null;
+    }
+
+    if (currentVoiceButton) {
+        currentVoiceButton.textContent = "🔊 Слушать";
+        currentVoiceButton.disabled = false;
+        currentVoiceButton = null;
+    }
+}
+
+async function speakMessage(text, button) {
+    if (
+        currentVoiceButton === button &&
+        (currentAudio || currentTTSController)
+    ) {
+        stopVoice();
+        return;
+    }
+
+    stopVoice();
+
+    const controller = new AbortController();
+
+    currentTTSController = controller;
+    currentVoiceButton = button;
+
+    button.textContent = "⏳ Загружаю голос...";
+    button.disabled = true;
+
+    try {
+        const response = await fetch(TTS_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ text }),
+            signal: controller.signal
+        });
+
+        if (!response.ok) {
+            throw new Error(
+                "Ошибка голосового сервиса: " + response.status
+            );
+        }
+
+        const blob = await response.blob();
+
+        if (controller.signal.aborted) return;
+
+        if (!blob.size) {
+            throw new Error("Аудио не получено.");
+        }
+
+        currentAudioUrl = URL.createObjectURL(blob);
+        currentAudio = new Audio(currentAudioUrl);
+
+        const audio = currentAudio;
+
+        currentTTSController = null;
+
+        button.disabled = false;
+        button.textContent = "⏹ Остановить";
+
+        audio.onended = () => {
+            if (currentAudio === audio) stopVoice();
+        };
+
+        audio.onerror = () => {
+            if (currentAudio === audio) {
+                stopVoice();
+                showComingSoon("Не удалось воспроизвести аудио");
+            }
+        };
+
+        await audio.play();
+
+    } catch (error) {
+        if (error.name === "AbortError") return;
+
+        console.error("Ошибка голоса Асуны:", error);
+
+        if (currentVoiceButton === button) {
+            stopVoice();
+
+            showComingSoon(
+                "Не удалось включить голос. Попробуй ещё раз."
+            );
+        }
+    }
+}
+
 /* СООБЩЕНИЯ ЧАТА */
 
-function addMessage(text, className) {
+function addMessage(text, className, withVoice = className === "asuna") {
     const message = document.createElement("div");
 
     message.className = "message " + className;
-    message.textContent = text;
+    message.appendChild(document.createTextNode(text));
+
+    if (withVoice) {
+        const voiceButton = document.createElement("button");
+
+        voiceButton.type = "button";
+        voiceButton.className = "voice-button";
+        voiceButton.textContent = "🔊 Слушать";
+        voiceButton.setAttribute(
+            "aria-label",
+            "Озвучить сообщение Асуны"
+        );
+
+        voiceButton.addEventListener("click", () => {
+            speakMessage(text, voiceButton);
+        });
+
+        message.appendChild(voiceButton);
+    }
 
     chat.appendChild(message);
     chat.scrollTop = chat.scrollHeight;
