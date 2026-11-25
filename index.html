@@ -1287,7 +1287,7 @@ async function sendMessage() {
 
         addMessage(data.reply, "asuna");
 
-                history.push(
+        history.push(
             { role: "user", parts: [{ text: value }] },
             { role: "model", parts: [{ text: data.reply }] }
         );
