@@ -1274,7 +1274,16 @@ async function sendMessage() {
 
     addMessage(value, "user");
 
-    input.value = "";
+// Сохраняем сообщение сразу, даже если сервер не ответит.
+history.push({
+    role: "user",
+    parts: [{ text: value }]
+});
+
+history = history.slice(-40);
+saveChatHistory();
+
+input.value = "";
     sendButton.disabled = true;
 
     const waiting = addMessage(
@@ -1320,23 +1329,24 @@ async function sendMessage() {
             );
         }
 
-        if (
+               if (
             !data ||
             typeof data.reply !== "string" ||
             !data.reply.trim()
         ) {
             throw new Error("Асуна не прислала текст ответа.");
         }
+
         applyCompanionState(data.companion);
 
         waiting.remove();
 
         addMessage(data.reply, "asuna");
 
-        history.push(
-            { role: "user", parts: [{ text: value }] },
-            { role: "model", parts: [{ text: data.reply }] }
-        );
+        history.push({
+            role: "model",
+            parts: [{ text: data.reply }]
+        });
 
         history = history.slice(-40);
 
