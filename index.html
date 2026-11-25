@@ -1507,9 +1507,10 @@ async function sendMessage() {
     sendButton.disabled = true;
 
     const waiting = addMessage(
-        "Асуна готовит ответ... 💜",
-        "asuna"
-    );
+    "Асуна готовит ответ... 💜",
+    "asuna",
+    false
+);
 
     const controller = new AbortController();
 
@@ -1561,8 +1562,14 @@ async function sendMessage() {
 
         waiting.remove();
 
-        addMessage(data.reply, "asuna");
+        const assistantMessage = addMessage(data.reply, "asuna");
 
+if (voiceSettings.autoSpeak) {
+    const voiceButton =
+        assistantMessage.querySelector(".voice-button");
+
+    speakMessage(data.reply, voiceButton);
+}
         history.push({
             role: "model",
             parts: [{ text: data.reply }]
