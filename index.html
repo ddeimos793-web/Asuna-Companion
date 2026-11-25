@@ -1272,19 +1272,21 @@ async function sendMessage() {
 
     if (!value || sendButton.disabled) return;
 
-addMessage(value, "user");
+    
+    addMessage(value, "user");
 
-// Сохраняем сообщение сразу, даже если сервер не ответит.
-history.push({
-    role: "user",
-    parts: [{ text: value }]
-});
+    // Сохраняем сообщение сразу, даже если сервер не ответит.
+    history.push({
+        role: "user",
+        parts: [{ text: value }]
+    });
 
-history = history.slice(-40);
-saveChatHistory();
+    history = history.slice(-40);
+    saveChatHistory();
 
-input.value = "";
-sendButton.disabled = true;
+    input.value = "";
+    sendButton.disabled = true;
+
 
     const waiting = addMessage(
         "Асуна готовит ответ... 💜",
