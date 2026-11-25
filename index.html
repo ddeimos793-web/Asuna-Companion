@@ -1425,19 +1425,24 @@ function closeChat() {
     document.getElementById("homeScreen").classList.remove("hidden");
 }
 
-function showComingSoon(name) {
+let toastTimer = null;
+
+function showNotice(message) {
     const toast = document.getElementById("toast");
 
-    toast.textContent =
-        name + " — этот раздел добавим на следующем этапе 💜";
-
+    toast.textContent = message;
     toast.classList.remove("hidden");
 
-    setTimeout(() => {
+    if (toastTimer) clearTimeout(toastTimer);
+
+    toastTimer = setTimeout(() => {
         toast.classList.add("hidden");
     }, 2600);
 }
 
+function showComingSoon(name) {
+    showNotice(name + " — этот раздел добавим на следующем этапе 💜");
+}
 
 /* СОХРАНЕНИЕ ИСТОРИИ */
 
