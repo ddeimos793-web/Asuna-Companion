@@ -1303,12 +1303,12 @@ input.value = "";
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-                message: value,
-                userName: userName,
-                history: history
-            }),
-            signal: controller.signal
+        body: JSON.stringify({
+            message: value,
+            userName: userName,
+            history: history.slice(0, -1)
+        }),
+        signal: controller.signal
         });
 
         const responseText = await response.text();
