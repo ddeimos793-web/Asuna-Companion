@@ -1273,7 +1273,7 @@ async function sendMessage() {
     if (!value || sendButton.disabled) return;
 
     
-    addMessage(value, "user");
+        addMessage(value, "user");
 
     // Сохраняем сообщение сразу, даже если сервер не ответит.
     history.push({
@@ -1286,7 +1286,6 @@ async function sendMessage() {
 
     input.value = "";
     sendButton.disabled = true;
-
 
     const waiting = addMessage(
         "Асуна готовит ответ... 💜",
