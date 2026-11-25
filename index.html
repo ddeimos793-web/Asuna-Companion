@@ -343,6 +343,52 @@ body[data-time="night"] .world-blossoms {
     0%, 100% { transform: scale(.94); }
     50% { transform: scale(1.06); }
 }
+    /* ЭМОЦИИ ЦВЕТКА АСУНЫ */
+
+body[data-asuna-emotion="joy"] .flower {
+    animation: flowerJoy 1.5s ease-in-out infinite;
+}
+
+body[data-asuna-emotion="shy"] .flower {
+    animation: flowerShy 2.5s ease-in-out infinite;
+}
+
+body[data-asuna-emotion="sadness"] .flower {
+    animation: flowerSadness 3.5s ease-in-out infinite;
+}
+
+body[data-asuna-emotion="surprise"] .flower {
+    animation: flowerSurprise 1.2s ease-in-out infinite;
+}
+
+body[data-asuna-emotion="tenderness"] .flower {
+    animation: flowerTenderness 3s ease-in-out infinite;
+}
+
+@keyframes flowerJoy {
+    0%, 100% { transform: scale(.95) rotate(-3deg); }
+    50% { transform: scale(1.15) rotate(3deg); }
+}
+
+@keyframes flowerShy {
+    0%, 100% { transform: scale(.96); }
+    50% { transform: scale(1.02) translateY(3px); }
+}
+
+@keyframes flowerSadness {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(7px); }
+}
+
+@keyframes flowerSurprise {
+    0%, 100% { transform: scale(1); }
+    40% { transform: scale(1.2); }
+}
+
+@keyframes flowerTenderness {
+    0%, 100% { transform: scale(.97); }
+    50% { transform: scale(1.07); }
+}
 
 .hero-label { color: #f5d9ff; margin-top: 10px; font-size: 14px; }
 .hero-hint { color: #d4c0df; font-size: 12px; margin-top: 7px; }
