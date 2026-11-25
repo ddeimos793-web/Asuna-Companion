@@ -1219,7 +1219,7 @@ function applyCompanionState(state) {
     document.body.dataset.asunaMood =
         typeof state.mood === "string" ? state.mood : emotion;
 }
-
+    
 /* ЧАТ С АСУНОЙ */
 async function sendMessage() {
     const value = input.value.trim();
@@ -1281,12 +1281,13 @@ async function sendMessage() {
         ) {
             throw new Error("Асуна не прислала текст ответа.");
         }
-
-        waiting.remove();
-
-        addMessage(data.reply, "asuna");
-
-        history.push(
+applyCompanionState(data.companion);
+     
+waiting.remove();
+     
+addMessage(data.reply, "asuna");
+        
+history.push(
             {
                 role: "user",
                 parts: [{ text: value }]
