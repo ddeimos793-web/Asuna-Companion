@@ -567,6 +567,34 @@ body[data-asuna-emotion="tenderness"] .flower {
 
 #sendButton:disabled { opacity: .5; }
 
+/* ГОЛОСОВЫЕ КНОПКИ АСУНЫ */
+
+.voice-button {
+    display: block;
+    margin-top: 10px;
+    padding: 7px 13px;
+    border: 1px solid #e6a4ed88;
+    border-radius: 14px;
+    background: #281a3c;
+    color: #ffe1fa;
+    font-size: 13px;
+}
+
+.voice-button:active {
+    transform: scale(.96);
+}
+
+.voice-button:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+
+body[data-theme="contrast"] .voice-button {
+    color: white;
+    background: #100b1c;
+    border: 2px solid white;
+}
+
 .toast {
     position: fixed;
     bottom: 25px;
@@ -857,6 +885,7 @@ body[data-motion="reduced"] .flower { transform: none; }
             <span class="appearance-caption">Дополнительные настройки</span>
             <button type="button" class="accessibility-toggle" id="textSizeToggle" aria-pressed="false" onclick="toggleTextSize()">🔎 Увеличить текст: выкл.</button>
             <button type="button" class="accessibility-toggle" id="motionToggle" aria-pressed="false" onclick="toggleReducedMotion()">✨ Отключить анимации: выкл.</button>
+            <button type="button" class="accessibility-toggle" id="autoVoiceToggle" aria-pressed="false" onclick="toggleAutoVoice()">🎙️ Автоматический голос: выкл.</button>
         </section>
         <button onclick="closeMenu(); showComingSoon('Внешность Асуны')">🌸 Внешность и персонаж</button>
         <button onclick="closeMenu(); showComingSoon('Голос')">🎙️ Голос</button>
@@ -874,6 +903,7 @@ body[data-motion="reduced"] .flower { transform: none; }
 <script>
 // Адрес AI-бэкенда Render
 const API_URL = "https://asuna-ai-m2o1.onrender.com/api/chat";
+const TTS_URL = "https://asuna-ai-m2o1.onrender.com/api/tts";
 const REQUEST_TIMEOUT = 190000;
 
 const chat = document.getElementById("chat");
@@ -911,6 +941,64 @@ const appearanceDefaults = {
 };
 
 let appearanceSettings = { ...appearanceDefaults };
+    
+/* НАСТРОЙКИ ГОЛОСА */
+
+let voiceSettings = {
+    autoSpeak: false
+};
+
+try {
+    const savedVoiceSettings = JSON.parse(
+        localStorage.getItem("asunaVoiceSettings") || "{}"
+    );
+
+    voiceSettings.autoSpeak =
+        savedVoiceSettings.autoSpeak === true;
+} catch (error) {
+    voiceSettings.autoSpeak = false;
+}
+
+function saveVoiceSettings() {
+    try {
+        localStorage.setItem(
+            "asunaVoiceSettings",
+            JSON.stringify(voiceSettings)
+        );
+    } catch (error) {
+        console.warn("Не удалось сохранить настройки голоса.");
+    }
+
+    applyVoiceSettings();
+}
+
+function applyVoiceSettings() {
+    const button = document.getElementById("autoVoiceToggle");
+
+    if (!button) return;
+
+    button.setAttribute(
+        "aria-pressed",
+        String(voiceSettings.autoSpeak)
+    );
+
+    button.textContent = voiceSettings.autoSpeak
+        ? "🎙️ Автоматический голос: вкл."
+        : "🎙️ Автоматический голос: выкл.";
+}
+
+function toggleAutoVoice() {
+    voiceSettings.autoSpeak = !voiceSettings.autoSpeak;
+    saveVoiceSettings();
+
+    showComingSoon(
+        voiceSettings.autoSpeak
+            ? "Автоматическое озвучивание включено"
+            : "Автоматическое озвучивание выключено"
+    );
+}
+
+applyVoiceSettings();
 
 try {
     const savedAppearance = JSON.parse(
