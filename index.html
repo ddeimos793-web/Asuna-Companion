@@ -1173,6 +1173,7 @@ function showComingSoon(name) {
     }, 2600);
 }
 
+
 /* СОХРАНЕНИЕ ИСТОРИИ */
 
 function saveChatHistory() {
@@ -1189,8 +1190,37 @@ function saveChatHistory() {
     }
 }
 
-/* ЧАТ С АСУНОЙ */
+/* СОСТОЯНИЕ И ЭМОЦИИ АСУНЫ */
+function applyCompanionState(state) {
+    if (!state || typeof state !== "object") return;
 
+    const allowedEmotions = [
+        "neutral",
+        "joy",
+        "shy",
+        "sadness",
+        "anger",
+        "surprise",
+        "tenderness"
+    ];
+
+    const emotion = allowedEmotions.includes(state.emotion)
+        ? state.emotion
+        : "neutral";
+
+    const expression = allowedEmotions.includes(state.expression)
+        ? state.expression
+        : emotion;
+
+    document.body.dataset.asunaEmotion = emotion;
+    document.body.dataset.asunaExpression = expression;
+    document.body.dataset.asunaAction =
+        typeof state.action === "string" ? state.action : "idle";
+    document.body.dataset.asunaMood =
+        typeof state.mood === "string" ? state.mood : emotion;
+}
+
+/* ЧАТ С АСУНОЙ */
 async function sendMessage() {
     const value = input.value.trim();
 
