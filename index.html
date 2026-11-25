@@ -1281,22 +1281,17 @@ async function sendMessage() {
         ) {
             throw new Error("Асуна не прислала текст ответа.");
         }
-        applyCompanionState(data.companion);
+         applyCompanionState(data.companion);
 
         waiting.remove();
 
         addMessage(data.reply, "asuna");
 
         history.push(
-            {
-                role: "user",
-                parts: [{ text: value }]
-            },
-            {
-                role: "model",
-                parts: [{ text: data.reply }]
-            }
+            { role: "user", content: message },
+            { role: "assistant", content: data.reply }
         );
+
         history = history.slice(-40);
 
         // Ошибка локального сохранения не отменяет успешный ответ.
