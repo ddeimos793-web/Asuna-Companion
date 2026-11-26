@@ -891,32 +891,43 @@ body[data-motion="reduced"] .flower { transform: none; }
 </div>
 
 <!-- ЭКРАН ЧАТА -->
-<div class="chat-header">
-    <button class="back-button" onclick="closeChat()">←</button>
+<div id="chatScreen" class="hidden">
 
-    <div style="flex:1">
-        <div class="chat-title">💜 Асуна</div>
-        <div class="chat-subtitle">Твой уютный чат</div>
+    <div class="chat-header">
+        <button class="back-button" onclick="closeChat()">←</button>
+
+        <div style="flex:1">
+            <div class="chat-title">💜 Асуна</div>
+            <div class="chat-subtitle">Твой уютный чат</div>
+        </div>
+
+        <button class="back-button"
+                type="button"
+                onclick="togglePinnedPanel()"
+                aria-label="Закреплённые сообщения">
+            📌
+        </button>
     </div>
 
-    <button class="back-button"
-            type="button"
-            onclick="togglePinnedPanel()">
-        📌
-    </button>
-</div>
+    <div id="pinnedPanel" class="pinned-panel">
+        <strong>📌 Закреплённые сообщения</strong>
+        <div id="pinnedList"></div>
+    </div>
 
-<div id="pinnedPanel" class="pinned-panel">
-    <strong>📌 Закреплённые сообщения</strong>
-    <div id="pinnedList"></div>
-</div>
+    <div class="chat" id="chat"></div>
 
     <div class="input-area">
-        <input id="message" type="text" placeholder="Напиши что-нибудь...">
+        <input
+            id="message"
+            type="text"
+            placeholder="Напиши что-нибудь..."
+            autocomplete="off"
+        >
         <button id="sendButton" onclick="sendMessage()">➤</button>
     </div>
+
 </div>
-    
+
 <!-- БОКОВАЯ ПАНЕЛЬ -->
 <div id="sideMenu" onclick="closeMenuOutside(event)">
     <div class="drawer">
@@ -1038,9 +1049,9 @@ function toggleAutoVoice() {
     voiceSettings.autoSpeak = !voiceSettings.autoSpeak;
     saveVoiceSettings();
 
-    showComingSoon(
+    showNotice(
         voiceSettings.autoSpeak
-            ? "Автоматическое озвучивание включено"
+            ? "Асуна будет озвучивать свои ответы 💜"
             : "Автоматическое озвучивание выключено"
     );
 }
