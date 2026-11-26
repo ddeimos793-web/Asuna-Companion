@@ -903,8 +903,7 @@ body[data-motion="reduced"] .flower { transform: none; }
 
         <button class="back-button"
                 type="button"
-                onclick="togglePinnedPanel()"
-                aria-label="Закреплённые сообщения">
+                onclick="togglePinnedPanel()">
             📌
         </button>
     </div>
@@ -914,15 +913,13 @@ body[data-motion="reduced"] .flower { transform: none; }
         <div id="pinnedList"></div>
     </div>
 
-    <div class="chat" id="chat"></div>
+    <div id="chat" class="chat"></div>
 
     <div class="input-area">
-        <input
-            id="message"
-            type="text"
-            placeholder="Напиши что-нибудь..."
-            autocomplete="off"
-        >
+        <input id="message"
+               type="text"
+               placeholder="Напиши что-нибудь...">
+
         <button id="sendButton" onclick="sendMessage()">➤</button>
     </div>
 
