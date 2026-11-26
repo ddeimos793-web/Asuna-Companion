@@ -891,28 +891,32 @@ body[data-motion="reduced"] .flower { transform: none; }
 </div>
 
 <!-- ЭКРАН ЧАТА -->
-<div id="chatScreen" class="hidden">
-    <div class="chat-header">
-        <button class="back-button" onclick="closeChat()">←</button>
-        <div>
-            <div class="chat-title">💜 Асуна</div>
-            <div class="chat-subtitle">Твой уютный чат</div>
-        </div>
+<div class="chat-header">
+    <button class="back-button" onclick="closeChat()">←</button>
+
+    <div style="flex:1">
+        <div class="chat-title">💜 Асуна</div>
+        <div class="chat-subtitle">Твой уютный чат</div>
     </div>
 
-    <div class="chat" id="chat">
-        <div class="message asuna">
-            Привет! Я Асуна! 💜
-            Я так рада нашей встрече!
-        </div>
-    </div>
+    <button class="back-button"
+            type="button"
+            onclick="togglePinnedPanel()">
+        📌
+    </button>
+</div>
+
+<div id="pinnedPanel" class="pinned-panel">
+    <strong>📌 Закреплённые сообщения</strong>
+    <div id="pinnedList"></div>
+</div>
 
     <div class="input-area">
         <input id="message" type="text" placeholder="Напиши что-нибудь...">
         <button id="sendButton" onclick="sendMessage()">➤</button>
     </div>
 </div>
-
+    
 <!-- БОКОВАЯ ПАНЕЛЬ -->
 <div id="sideMenu" onclick="closeMenuOutside(event)">
     <div class="drawer">
@@ -1382,13 +1386,148 @@ async function speakMessage(text, button) {
     }
 }
 
+/* ЗАКРЕПЛЁННЫЕ СООБЩЕНИЯ */
+
+let pinnedMessages = [];
+
+try {
+    const savedPins = JSON.parse(
+        localStorage.getItem("asunaPinnedMessages") || "[]"
+    );
+
+    if (Array.isArray(savedPins)) {
+        pinnedMessages = savedPins;
+    }
+} catch (error) {
+    pinnedMessages = [];
+}
+
+function savePinnedMessages() {
+    try {
+        localStorage.setItem(
+            "asunaPinnedMessages",
+            JSON.stringify(pinnedMessages)
+        );
+        return true;
+    } catch (error) {
+        showNotice("Не удалось сохранить закрепления 💜");
+        return false;
+    }
+}
+
+function isMessagePinned(role, text) {
+    return pinnedMessages.some(item =>
+        item.role === role && item.text === text
+    );
+}
+
+async function copyMessage(text) {
+    try {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+        } else {
+            const area = document.createElement("textarea");
+            area.value = text;
+            area.style.position = "fixed";
+            area.style.opacity = "0";
+            document.body.appendChild(area);
+            area.select();
+
+            const copied = document.execCommand("copy");
+            area.remove();
+
+            if (!copied) throw new Error("Copy failed");
+        }
+
+        showNotice("Сообщение скопировано 📋");
+    } catch (error) {
+        showNotice("Не удалось скопировать сообщение");
+    }
+}
+
+function togglePinMessage(role, text) {
+    const index = pinnedMessages.findIndex(item =>
+        item.role === role && item.text === text
+    );
+
+    if (index !== -1) {
+        pinnedMessages.splice(index, 1);
+        showNotice("Сообщение откреплено");
+    } else {
+        pinnedMessages.push({
+            role,
+            text,
+            date: new Date().toISOString()
+        });
+        showNotice("Сообщение закреплено 📌");
+    }
+
+    if (!savePinnedMessages()) return;
+
+    renderPinnedMessages();
+    renderChatHistory();
+}
+
+function togglePinnedPanel() {
+    const panel = document.getElementById("pinnedPanel");
+
+    if (!panel) return;
+
+    panel.classList.toggle("active");
+
+    if (panel.classList.contains("active")) {
+        renderPinnedMessages();
+    }
+}
+
+function renderPinnedMessages() {
+    const list = document.getElementById("pinnedList");
+
+    if (!list) return;
+
+    list.replaceChildren();
+
+    if (pinnedMessages.length === 0) {
+        list.textContent = "Пока ничего не закреплено 🌸";
+        return;
+    }
+
+    pinnedMessages.forEach(item => {
+        const entry = document.createElement("div");
+        entry.className = "pinned-item";
+
+        const author = document.createElement("strong");
+        author.textContent =
+            item.role === "user" ? "Ты" : "Асуна";
+
+        const content = document.createElement("div");
+        content.textContent = item.text;
+
+        const removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.className = "message-action";
+        removeButton.textContent = "Открепить";
+
+        removeButton.addEventListener("click", () => {
+            togglePinMessage(item.role, item.text);
+        });
+
+        entry.append(author, content, removeButton);
+        list.appendChild(entry);
+    });
+}
+
 /* СООБЩЕНИЯ ЧАТА */
 
 function addMessage(text, className, withVoice = className === "asuna") {
     const message = document.createElement("div");
 
     message.className = "message " + className;
-    message.appendChild(document.createTextNode(text));
+
+    const messageText = document.createElement("div");
+    messageText.className = "message-text";
+    messageText.textContent = text;
+    message.appendChild(messageText);
 
     if (withVoice) {
         const voiceButton = document.createElement("button");
@@ -1407,6 +1546,39 @@ function addMessage(text, className, withVoice = className === "asuna") {
 
         message.appendChild(voiceButton);
     }
+
+    const role = className === "user" ? "user" : "model";
+
+    const actions = document.createElement("div");
+    actions.className = "message-actions";
+
+    const copyButton = document.createElement("button");
+    copyButton.type = "button";
+    copyButton.className = "message-action";
+    copyButton.textContent = "📋 Копировать";
+
+    copyButton.addEventListener("click", () => {
+        copyMessage(text);
+    });
+
+    const pinButton = document.createElement("button");
+    pinButton.type = "button";
+    pinButton.className = "message-action";
+
+    function updatePinButton() {
+        pinButton.textContent = isMessagePinned(role, text)
+            ? "📌 Открепить"
+            : "📌 Закрепить";
+    }
+
+    updatePinButton();
+
+    pinButton.addEventListener("click", () => {
+        togglePinMessage(role, text);
+    });
+
+    actions.append(copyButton, pinButton);
+    message.appendChild(actions);
 
     chat.appendChild(message);
     chat.scrollTop = chat.scrollHeight;
