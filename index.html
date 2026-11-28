@@ -570,6 +570,42 @@ body[data-asuna-emotion="tenderness"] .flower {
     image-rendering: pixelated;
 }
 
+    /* БАЗОВЫЕ ДВИЖЕНИЯ PIXEL ASUNA */
+
+#pixelAsunaSprite {
+    transform-origin: center bottom;
+    animation: pixelAsunaIdle 3s ease-in-out infinite;
+}
+
+@keyframes pixelAsunaIdle {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+/* Радость */
+#pixelAsunaSprite.happy {
+    animation: pixelAsunaHappy 0.6s ease-in-out infinite;
+}
+
+@keyframes pixelAsunaHappy {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-6px) scale(1.04); }
+}
+
+/* Смущение */
+#pixelAsunaSprite.shy {
+    animation: pixelAsunaShy 2s ease-in-out infinite;
+}
+
+@keyframes pixelAsunaShy {
+    0%, 100% { transform: rotate(0); }
+    50% { transform: rotate(-3deg); }
+}
+    
 #message {
     flex: 1;
     min-width: 0;
@@ -940,10 +976,8 @@ body[data-motion="reduced"] .flower { transform: none; }
 
     <div id="chat" class="chat"></div>
      <!-- МЕСТО ОБИТАНИЯ PIXEL ASUNA -->
-<div id="pixelAsunaDock">
-    <div id="pixelAsunaStage">
-        <!-- Здесь появится Pixel Asuna -->
-    </div>
+<div id="pixelAsunaStage">
+    <div id="pixelAsunaSprite"></div>
 </div>
     
     <div class="input-area">
@@ -1713,9 +1747,52 @@ function saveChatHistory() {
         return false;
     }
 }
-
+ 
 /* СОСТОЯНИЕ И ЭМОЦИИ АСУНЫ */
 function applyCompanionState(state) {
+    if (!state || typeof state !== "object") return;
+
+    const allowedEmotions = [
+        "neutral",
+        "joy",
+        "shy",
+        "sadness",
+        "anger",
+        "surprise",
+        "tenderness"
+    ];
+
+    const emotion = allowedEmotions.includes(state.emotion)
+        ? state.emotion
+        : "neutral";
+
+    const expression = allowedEmotions.includes(state.expression)
+        ? state.expression
+        : emotion;
+
+    document.body.dataset.asunaEmotion = emotion;
+    document.body.dataset.asunaExpression = expression;
+    document.body.dataset.asunaAction =
+        typeof state.action === "string" ? state.action : "idle";
+    document.body.dataset.asunaMood =
+        typeof state.mood === "string" ? state.mood : emotion;
+}
+
+/* УПРАВЛЕНИЕ PIXEL ASUNA */
+function setPixelAsunaMood(mood = "idle") {
+    const sprite = document.getElementById("pixelAsunaSprite");
+
+    if (!sprite) return;
+
+    sprite.classList.remove("happy", "shy");
+
+    if (mood === "happy") {
+        sprite.classList.add("happy");
+    } else if (mood === "shy") {
+        sprite.classList.add("shy");
+    }
+}
+
     if (!state || typeof state !== "object") return;
 
     const allowedEmotions = [
