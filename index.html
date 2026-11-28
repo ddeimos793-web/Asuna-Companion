@@ -1858,7 +1858,7 @@ async function sendMessage() {
             );
         }
 
-               if (
+                       if (
             !data ||
             typeof data.reply !== "string" ||
             !data.reply.trim()
@@ -1868,10 +1868,20 @@ async function sendMessage() {
 
         applyCompanionState(data.companion);
 
+        // ЭМОЦИИ PIXEL ASUNA
+        const emotion = data.companion && data.companion.emotion;
+
+        if (emotion === "joy") {
+            setPixelAsunaMood("happy");
+        } else if (emotion === "shy") {
+            setPixelAsunaMood("shy");
+        } else {
+            setPixelAsunaMood("idle");
+        }
+
         waiting.remove();
 
         const assistantMessage = addMessage(data.reply, "asuna");
-
 if (voiceSettings.autoSpeak) {
     const voiceButton =
         assistantMessage.querySelector(".voice-button");
